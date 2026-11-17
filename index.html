@@ -1,0 +1,515 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<style>body{margin:0}</style>
+<title>Sincronía y Power Boosting</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500&family=IBM+Plex+Sans:wght@400;500;600&display=swap">
+<style>
+/* Concepto: ficha técnica de campo. Una columna de pasos a la izquierda, el diagrama de la trama a la derecha y, debajo, el panel de potencia con controles y gráfica. */
+:root{
+  --bg:#eceff3; --surface:#fafbfc; --ink:#141f2a; --muted:#566676; --line:#cfd7df; --accent:#1d5fb8;
+  --sync:#c9570f; --sync2:#c08a0a; --pilot:#1d63c4; --bcast:#14825a; --boost:#b32a83; --data:#8794a1; --on:#ffffff;
+  --font:"IBM Plex Sans",system-ui,-apple-system,"Segoe UI",sans-serif;
+  --mono:"IBM Plex Mono",ui-monospace,Consolas,monospace;
+}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){
+  --bg:#0e151c; --surface:#151f29; --ink:#e5ecf2; --muted:#93a3b2; --line:#2a3846; --accent:#6aa6ff;
+  --sync:#ff8a4d; --sync2:#f2c04a; --pilot:#5ba2ff; --bcast:#3fcf94; --boost:#f06cc0; --data:#5f7081; --on:#0b1117; color-scheme:dark}}
+:root[data-theme="dark"]{
+  --bg:#0e151c; --surface:#151f29; --ink:#e5ecf2; --muted:#93a3b2; --line:#2a3846; --accent:#6aa6ff;
+  --sync:#ff8a4d; --sync2:#f2c04a; --pilot:#5ba2ff; --bcast:#3fcf94; --boost:#f06cc0; --data:#5f7081; --on:#0b1117; color-scheme:dark}
+*{box-sizing:border-box}
+body{background:var(--bg);color:var(--ink);font:15px/1.6 var(--font)}
+h1,h2,h3{text-wrap:balance;line-height:1.2;margin:0}
+p{margin:0}
+.wrap{max-width:1120px;margin:0 auto;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px))}
+header.top{padding-block:36px 24px}
+.eyebrow{font:500 12px var(--mono);letter-spacing:.12em;text-transform:uppercase;color:var(--muted);margin-bottom:10px}
+h1{font-size:clamp(26px,4.4vw,42px);font-weight:600;letter-spacing:-.01em;max-width:22ch}
+.lead{max-width:62ch;color:var(--muted);margin-top:14px;font-size:16px}
+.actions{display:flex;gap:12px;align-items:center;flex-wrap:wrap;margin-top:18px}
+button{font:inherit;color:inherit;cursor:pointer}
+button:focus-visible,input:focus-visible,select:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+.btn{background:var(--surface);border:1px solid var(--line);border-radius:6px;padding:8px 14px;font-weight:500}
+.btn:hover{border-color:var(--accent)}
+#copied{color:var(--muted);font-size:13px}
+#fallback{font:13px var(--mono);padding:6px 8px;border:1px solid var(--line);border-radius:6px;background:var(--surface);color:var(--ink);width:min(420px,100%)}
+
+.tabs{display:flex;gap:0;border-bottom:1px solid var(--line);margin-bottom:28px}
+.tabs .wrap{display:flex;gap:6px;flex-wrap:wrap}
+.tab{background:none;border:0;border-bottom:3px solid transparent;padding:10px 18px 9px;text-align:left;color:var(--muted)}
+.tab b{display:block;font-size:22px;font-weight:600;color:inherit;letter-spacing:-.01em}
+.tab span{font:12px var(--mono);letter-spacing:.04em}
+.tab[aria-selected="true"]{border-bottom-color:var(--accent);color:var(--ink)}
+.tab:hover{color:var(--ink)}
+
+section{padding-block:8px 36px}
+h2{font-size:clamp(20px,2.6vw,26px);font-weight:600;margin-bottom:6px}
+.sub{color:var(--muted);max-width:68ch;margin-bottom:18px}
+
+.sync{display:grid;grid-template-columns:minmax(260px,330px) minmax(0,1fr);gap:24px;align-items:start}
+.steps{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:8px}
+.step{width:100%;text-align:left;background:var(--surface);border:1px solid var(--line);border-radius:8px;padding:12px 14px;display:grid;grid-template-columns:28px 1fr;gap:4px 10px}
+.step .n{font:500 13px var(--mono);width:26px;height:26px;border-radius:50%;border:1px solid var(--line);display:grid;place-items:center;color:var(--muted)}
+.step .tt{font-weight:600}
+.step .det{grid-column:2;color:var(--muted);font-size:14px;display:none}
+.step .det .learn{display:block;margin-top:8px;font:13px/1.45 var(--mono);color:var(--ink)}
+.step[aria-current="step"]{border-color:var(--accent)}
+.step[aria-current="step"] .n{background:var(--accent);border-color:var(--accent);color:var(--on)}
+.step[aria-current="step"] .det{display:block}
+.ctrl{display:flex;gap:8px;margin-top:12px;flex-wrap:wrap}
+.card{background:var(--surface);border:1px solid var(--line);border-radius:10px}
+.diagram{padding:14px}
+.svgwrap{overflow-x:auto}
+.svgwrap svg{display:block;width:100%;min-width:640px;height:auto}
+.cap{color:var(--muted);font-size:13px;margin-top:8px;max-width:80ch}
+svg text{font-family:var(--mono);fill:var(--ink)}
+svg .h{font-size:12px;font-weight:500;fill:var(--muted)}
+svg .lbl{font-size:11px;fill:var(--muted)}
+svg .tick{font-size:9.5px;fill:var(--muted)}
+svg .in{font-size:11px;font-weight:500;fill:var(--on)}
+svg .slot{fill:none;stroke:var(--line)}
+svg .grid{fill:none;stroke:var(--line)}
+svg .ctx{fill:var(--line);opacity:.35}
+svg .conn{fill:var(--line);opacity:.35}
+svg .dash{stroke:var(--muted);stroke-dasharray:4 3;fill:none}
+.f-sync{fill:var(--sync)} .f-sync2{fill:var(--sync2)} .f-pilot{fill:var(--pilot)} .f-bcast{fill:var(--bcast)} .f-boost{fill:var(--boost)} .f-data{fill:var(--data)}
+.legend i.f-sync{background:var(--sync)} .legend i.f-sync2{background:var(--sync2)} .legend i.f-pilot{background:var(--pilot)} .legend i.f-bcast{background:var(--bcast)} .legend i.f-data{background:var(--data)}
+.dim [data-k]{opacity:.22;transition:opacity .25s}
+.dim [data-k].on{opacity:1}
+.wedge{fill:var(--sync);stroke:var(--surface);stroke-width:1.5}
+.dim .wedge.on{opacity:.45}
+.dim .wedge.on.hot{opacity:1}
+.legend{display:flex;gap:16px;flex-wrap:wrap;margin-top:10px;font-size:13px;color:var(--muted)}
+.legend i{display:inline-block;width:12px;height:12px;border-radius:2px;margin-right:6px;vertical-align:-1px}
+
+.power{display:grid;grid-template-columns:minmax(260px,330px) minmax(0,1fr);gap:24px;align-items:start}
+.panel{padding:16px;display:flex;flex-direction:column;gap:16px}
+.field label,.field .lab{display:flex;justify-content:space-between;font-size:13px;color:var(--muted);margin-bottom:4px}
+.field output{font:500 13px var(--mono);color:var(--ink)}
+input[type=range]{width:100%;accent-color:var(--accent)}
+select{width:100%;font:inherit;padding:7px 8px;border-radius:6px;border:1px solid var(--line);background:var(--bg);color:var(--ink)}
+.where{font-size:13px;color:var(--muted);border-top:1px solid var(--line);padding-top:12px}
+.where b{color:var(--ink)}
+.out{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:12px}
+.kpi{padding:12px 14px}
+.kpi .k{font-size:12px;color:var(--muted)}
+.kpi .v{font:500 24px/1.2 var(--mono);margin-top:2px;font-variant-numeric:tabular-nums}
+.kpi .s{font-size:12px;color:var(--muted);margin-top:2px}
+.bars{padding:14px 16px;margin-top:12px}
+.bars h3,.chart h3{font-size:14px;font-weight:600;margin-bottom:10px}
+.brow{display:grid;grid-template-columns:78px 1fr;gap:10px;align-items:center;margin-bottom:8px;font-size:12px;color:var(--muted)}
+.bar{display:flex;height:26px;border-radius:4px;overflow:hidden;background:var(--line)}
+.bar div{display:flex;align-items:center;justify-content:center;font:500 11px var(--mono);color:var(--on);min-width:0;white-space:nowrap;overflow:hidden;transition:flex-basis .25s}
+.chart{padding:14px 16px;margin-top:12px}
+.insight{margin-top:12px;padding:12px 14px;border-left:3px solid var(--boost);background:var(--surface);border-radius:0 8px 8px 0;font-size:14px}
+
+.tablewrap{overflow-x:auto}
+table{border-collapse:collapse;width:100%;min-width:640px;font-size:14px}
+th,td{text-align:left;padding:10px 14px;border-bottom:1px solid var(--line);vertical-align:top}
+th{font-weight:600;font-size:13px;color:var(--muted)}
+td:first-child{font-weight:500;color:var(--muted);width:20%}
+tr.cur td,th.cur{background:color-mix(in srgb,var(--accent) 8%,transparent)}
+footer{padding-block:12px 48px;color:var(--muted);font-size:13px;max-width:90ch}
+footer p+p{margin-top:8px}
+
+@media (max-width:860px){.sync,.power{grid-template-columns:minmax(0,1fr)}}
+@media (prefers-reduced-motion:reduce){.dim [data-k],.bar div{transition:none}}
+</style>
+
+</head>
+<body>
+<header class="top"><div class="wrap">
+  <p class="eyebrow">Apuntes interactivos de radio</p>
+  <h1>Sincronía y power boosting en 3G, 4G y 5G</h1>
+  <p class="lead">Elige una tecnología, recorre los pasos con los que el móvil encuentra la celda y mueve los controles de potencia para ver cuánta cobertura se gana y qué se paga por ella.</p>
+  <div class="actions">
+    <button class="btn" id="copy" type="button">Copiar enlace de esta página</button>
+    <span id="copied" role="status"></span>
+    <input id="fallback" type="text" readonly hidden aria-label="Enlace de la página">
+  </div>
+</div></header>
+
+<nav class="tabs" aria-label="Tecnología"><div class="wrap" role="tablist">
+  <button class="tab" role="tab" id="tab-3g" data-t="3g" type="button"><b>3G</b><span>WCDMA · UMTS</span></button>
+  <button class="tab" role="tab" id="tab-4g" data-t="4g" type="button"><b>4G</b><span>LTE</span></button>
+  <button class="tab" role="tab" id="tab-5g" data-t="5g" type="button"><b>5G</b><span>NR</span></button>
+</div></nav>
+
+<main class="wrap">
+<section aria-labelledby="h-sync">
+  <h2 id="h-sync">Cómo se sincroniza el móvil</h2>
+  <p class="sub" id="sync-intro"></p>
+  <div class="sync">
+    <div>
+      <ol class="steps" id="steps"></ol>
+      <div class="ctrl">
+        <button class="btn" id="prev" type="button">Anterior</button>
+        <button class="btn" id="next" type="button">Siguiente</button>
+        <button class="btn" id="play" type="button" aria-pressed="false">Reproducir secuencia</button>
+      </div>
+    </div>
+    <div class="card diagram">
+      <div class="svgwrap"><svg id="dia" role="img" aria-label="Diagrama de la trama y de las señales de sincronía"></svg></div>
+      <div class="legend" id="legend"></div>
+      <p class="cap" id="dia-cap"></p>
+    </div>
+  </div>
+</section>
+
+<section aria-labelledby="h-pw">
+  <h2 id="h-pw">Power boosting: qué se gana y qué se paga</h2>
+  <p class="sub" id="pw-intro"></p>
+  <div class="power">
+    <div class="card panel">
+      <div class="field"><label for="ptot">Potencia total del amplificador <output id="o-ptot"></output></label><input type="range" id="ptot" step="1"></div>
+      <div class="field" id="f-bw"><label for="bw">Ancho de banda del canal</label><select id="bw"></select></div>
+      <div class="field"><label for="boost">Boost del piloto <output id="o-boost"></output></label><input type="range" id="boost" min="0" max="6" step="0.5"></div>
+      <div class="field" id="f-beam"><label for="beam">Ganancia de beamforming del SSB <output id="o-beam"></output></label><input type="range" id="beam" min="0" max="15" step="1"></div>
+      <div class="field"><label for="env">Entorno de propagación</label>
+        <select id="env">
+          <option value="3.8">Urbano denso (n = 3,8)</option>
+          <option value="3.5" selected>Urbano (n = 3,5)</option>
+          <option value="3.2">Suburbano (n = 3,2)</option>
+          <option value="3.0">Rural abierto (n = 3,0)</option>
+        </select></div>
+      <p class="where" id="where"></p>
+    </div>
+    <div>
+      <div class="out" id="out"></div>
+      <div class="card bars"><h3>Reparto de la potencia del amplificador</h3><div id="bars"></div></div>
+      <div class="card chart"><h3>Ganancia del piloto y costo en datos según el boost</h3><div class="svgwrap"><svg id="chart" role="img" aria-label="Gráfica de ganancia del piloto y costo en datos frente al boost"></svg></div></div>
+      <p class="insight" id="insight"></p>
+    </div>
+  </div>
+</section>
+
+<section aria-labelledby="h-cmp">
+  <h2 id="h-cmp">Las tres tecnologías lado a lado</h2>
+  <p class="sub">La tendencia es clara: cada generación enciende menos señales fijas y las concentra en ráfagas más espaciadas.</p>
+  <div class="card tablewrap"><table id="cmp"></table></div>
+</section>
+</main>
+
+<footer class="wrap">
+  <p>Los valores son típicos y el cálculo de potencia es un modelo simplificado a carga completa. Sirve para entender la dirección y el orden de magnitud de cada efecto. Para planificar una red real, confirma los parámetros con el fabricante y las pruebas de campo.</p>
+  <p>Radio de celda relativo = 10^(ganancia / (10 · n)), con n el exponente de pérdidas del entorno. Referencias: 3GPP TS 25.211 y 25.213 (3G), TS 36.211, 36.213 y 36.331 (4G), TS 38.211, 38.213 y 38.331 (5G).</p>
+</footer>
+
+<script>
+(function(){
+'use strict';
+var $=function(id){return document.getElementById(id)};
+var nf=function(x,d){d=d==null?1:d;return x.toLocaleString('es-CO',{minimumFractionDigits:d,maximumFractionDigits:d})};
+var sg=function(x,d){var s=x>0.0001?'+':(x<-0.0001?'−':'');return s+nf(Math.abs(x),d)};
+var lin=function(db){return Math.pow(10,db/10)}, dB=function(x){return 10*Math.log10(x)};
+var reduce=window.matchMedia&&window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+/* ---------- Datos por tecnología ---------- */
+var TECH={
+ '3g':{
+  intro:'En WCDMA todas las celdas usan la misma frecuencia y se distinguen por su código de scrambling. El móvil lo averigua en tres pasos, de lo más general a lo más particular.',
+  steps:[
+   {t:'Detectar la ranura',keys:['psch'],d:'Correlaciona con el código P-SCH de 256 chips, idéntico en todas las celdas, y se queda con los picos de mayor potencia.',learn:'Aprende: dónde empieza cada ranura (0,667 ms).'},
+   {t:'Encontrar la trama y el grupo',keys:['ssch'],d:'Lee los S-SCH de 15 ranuras seguidas. La secuencia que forman señala uno de 64 grupos de códigos y marca el inicio de la trama.',learn:'Aprende: inicio de trama (10 ms) y grupo de códigos (1 de 64).'},
+   {t:'Identificar el código de scrambling',keys:['cpich'],d:'Prueba los 8 códigos primarios del grupo sobre el CPICH. El que correlaciona identifica la celda. El CPICH queda como referencia para medir nivel (RSCP y Ec/Io).',learn:'Aprende: código primario de scrambling (1 de 512) y nivel de la celda.'},
+   {t:'Leer la información del sistema',keys:['pccpch'],d:'Con temporización y código conocidos, decodifica el P-CCPCH, que lleva el canal de difusión (BCH).',learn:'Aprende: número de trama (SFN) y bloques de información del sistema.'}],
+  cap:'El SCH solo ocupa los primeros 256 chips de cada ranura (10 %). En ese tramo el P-CCPCH no transmite. El CPICH, en cambio, no se apaga nunca.',
+  legend:[['sync','P-SCH'],['sync2','S-SCH'],['pilot','CPICH (piloto continuo)'],['bcast','P-CCPCH (difusión)']],
+  pilot:'CPICH',
+  intro2:'En 3G el piloto es el CPICH y consume potencia del mismo amplificador que usan los usuarios. Subirlo extiende la cobertura, pero deja menos potencia para tráfico y aumenta la interferencia sobre las celdas vecinas. Los canales de sincronía y difusión se fijan con un desfase respecto al CPICH, así que suben con él.',
+  where:'<b>Dónde se aplica:</b> potencia del CPICH (por defecto 10 % del amplificador, 33 dBm de 43 dBm). SCH y P-CCPCH se configuran como desfase respecto al CPICH. Supuesto del modelo: los canales comunes suman 1,5 veces el CPICH.'},
+ '4g':{
+  intro:'En LTE hay 504 identidades de celda (PCI) y se obtienen con dos señales cortas en el centro de la banda, sin importar el ancho de banda del canal.',
+  steps:[
+   {t:'PSS: símbolo y media trama',keys:['pss'],d:'Secuencia Zadoff-Chu de 62 subportadoras en el centro de la banda, cada 5 ms. Hay tres secuencias posibles.',learn:'Aprende: temporización de símbolo, medias tramas de 5 ms y NID2 (0 a 2).'},
+   {t:'SSS: trama e identidad',keys:['sss'],d:'Va en el símbolo anterior al PSS. Una de 168 secuencias, distinta en las subtramas 0 y 5, así que también marca el inicio de la trama.',learn:'Aprende: inicio de trama (10 ms), NID1 (0 a 167) y PCI = 3 × NID1 + NID2.'},
+   {t:'CRS: medir la celda',keys:['crs'],d:'Señal de referencia presente en todas las subtramas y en todo el ancho de banda. Su posición en frecuencia depende del PCI. Aquí se aplica el power boosting.',learn:'Aprende: RSRP y RSRQ, y obtiene la estimación de canal para decodificar.'},
+   {t:'PBCH: el MIB',keys:['pbch'],d:'Cuatro símbolos en la subtrama 0, sobre las 72 subportadoras centrales. Se repite cada 10 ms dentro de un ciclo de 40 ms.',learn:'Aprende: ancho de banda del canal, configuración del PHICH y SFN.'}],
+  cap:'PSS y SSS ocupan 62 subportadoras y se envían con 5 ms de periodicidad. El CRS, en cambio, está en todas las subtramas, y por eso LTE nunca descansa del todo.',
+  legend:[['sync','PSS'],['sync2','SSS'],['pilot','CRS (referencia)'],['bcast','PBCH (MIB)']],
+  pilot:'RS',
+  intro2:'En 4G se refuerza la señal de referencia (CRS). Con el parámetro referenceSignalPower se fija su nivel por elemento de recurso (RE) y con PA y PB se reparte la potencia entre símbolos con y sin referencia. Si la potencia total es fija, lo que gana el CRS lo pierden los datos.',
+  where:'<b>Dónde se aplica:</b> referenceSignalPower y relación PB/PA (3GPP TS 36.213). Algunos fabricantes permiten además un desfase para PSS, SSS y PBCH. Supuesto del modelo: 2 puertos de antena, 16 de cada 168 RE de un bloque de recursos son CRS.'},
+ '5g':{
+  intro:'En NR todo lo que el móvil necesita para entrar viaja en el bloque SSB: 4 símbolos y 20 bloques de recursos. No existe un piloto continuo. El SSB sale en ráfagas, y cada uno por un haz distinto.',
+  steps:[
+   {t:'PSS: símbolo y NID2',keys:['pss'],d:'127 subportadoras en el primer símbolo del SSB. Tres secuencias posibles. El móvil busca en la rejilla de sincronía (GSCN), no en cada frecuencia.',learn:'Aprende: temporización de símbolo, frecuencia aproximada y NID2 (0 a 2).'},
+   {t:'SSS: NID1 y PCI',keys:['sss'],d:'127 subportadoras en el tercer símbolo. Una de 336 secuencias.',learn:'Aprende: NID1 (0 a 335) y PCI = 3 × NID1 + NID2 (1008 celdas).'},
+   {t:'DMRS del PBCH: el haz',keys:['dmrs','beam'],d:'Cada SSB de la ráfaga sale por un haz distinto. El DMRS del PBCH indica el índice del SSB y el móvil se queda con el más potente.',learn:'Aprende: índice del SSB (mejor haz) y media trama.'},
+   {t:'PBCH: el MIB',keys:['pbch'],d:'Se decodifica sobre 240 subportadoras en los símbolos 1 y 3, y en los bordes del símbolo 2.',learn:'Aprende: SFN, separación entre subportadoras y ubicación del CORESET 0 para leer el SIB1.'}],
+  cap:'La ráfaga cabe en 5 ms (aquí 8 SSB con 30 kHz). Se repite cada 20 ms por defecto para el acceso inicial, y se puede configurar entre 5 y 160 ms. El número de haces por ráfaga es 4, 8 o 64 según la banda.',
+  legend:[['sync','PSS'],['sync2','SSS'],['bcast','PBCH'],['pilot','DMRS del PBCH']],
+  pilot:'SSB',
+  intro2:'En 5G casi todo el refuerzo viene del beamforming: concentrar la energía del SSB en un haz da varios dB que en 3G y 4G se obtenían subiendo potencia. Además se puede elevar la potencia por RE del SSB (ss-PBCH-BlockPower). Como el SSB solo ocupa 4 símbolos, el costo en datos existe solo en esos símbolos.',
+  where:'<b>Dónde se aplica:</b> ss-PBCH-BlockPower (EPRE del SSB), desfase de potencia del CSI-RS y ganancia del arreglo de antenas. Supuesto del modelo: SSB de 240 subportadoras sobre el ancho de banda elegido, a 30 kHz.'}
+};
+var DEF={'3g':{ptot:43,min:40,max:46,boost:3,bw:null},'4g':{ptot:46,min:40,max:49,boost:3,bw:20},'5g':{ptot:53,min:43,max:56,boost:3,bw:100,beam:9}};
+var BWS={'4g':[[5,300],[10,600],[15,900],[20,1200]],'5g':[[20,612],[40,1272],[100,3276]]};
+var P={}; // parámetros por tecnología
+['3g','4g','5g'].forEach(function(k){P[k]={ptot:DEF[k].ptot,boost:DEF[k].boost,bw:DEF[k].bw,beam:DEF[k].beam||0,env:3.5}});
+var tech='3g', step=0, playing=false, timer=null, beamTimer=null;
+
+/* ---------- Dibujo SVG ---------- */
+function R(x,y,w,h,c,k,x2){return '<rect x="'+x+'" y="'+y+'" width="'+w+'" height="'+h+'" class="'+c+'"'+(k?' data-k="'+k+'"':'')+(x2||'')+'/>'}
+function T(x,y,s,c,a,k){return '<text x="'+x+'" y="'+y+'" class="'+(c||'lbl')+'" text-anchor="'+(a||'start')+'"'+(k?' data-k="'+k+'"':'')+'>'+s+'</text>'}
+function L(x1,y1,x2,y2,c){return '<line x1="'+x1+'" y1="'+y1+'" x2="'+x2+'" y2="'+y2+'" class="'+(c||'grid')+'"/>'}
+
+function draw3g(){
+ var x0=70,W=670,sw=W/15,s='',i;
+ s+=T(0,14,'Trama de 10 ms · 15 ranuras de 0,667 ms','h');
+ for(i=0;i<15;i++){
+  s+=R(x0+i*sw,40,sw,22,'slot');
+  s+=T(x0+i*sw+sw/2,34,i,'tick','middle');
+  s+=R(x0+i*sw,40,sw*0.1+0.5,11,'f-sync','psch');
+  s+=R(x0+i*sw,51,sw*0.1+0.5,11,'f-sync2','ssch');
+  s+=R(x0+i*sw+sw*0.1,86,sw*0.9,10,'f-bcast','pccpch');
+ }
+ s+=T(0,55,'SCH');
+ s+=R(x0,70,W,10,'f-pilot','cpich'); s+=T(0,79,'CPICH'); s+=T(0,95,'P-CCPCH');
+ s+='<polygon points="'+x0+',100 '+(x0+sw)+',100 '+(x0+W)+',138 '+x0+',138" class="conn"/>';
+ s+=T(0,156,'Zoom a la ranura 0 · 2560 chips a 3,84 Mchip/s','h');
+ var cs=W/2560,sch=256*cs;
+ s+=R(x0,166,sch,24,'f-sync','psch'); s+=T(x0+sch/2,182,'P-SCH','in','middle','psch'); s+=T(0,182,'P-SCH');
+ s+=R(x0,198,sch,24,'f-sync2','ssch'); s+=T(x0+sch/2,214,'S-SCH','in','middle','ssch'); s+=T(0,214,'S-SCH');
+ s+=R(x0+sch,230,W-sch,24,'f-bcast','pccpch'); s+=T(x0+sch+(W-sch)/2,246,'2304 chips · lleva el BCH','in','middle','pccpch'); s+=T(0,246,'P-CCPCH');
+ s+=R(x0,262,W,24,'f-pilot','cpich'); s+=T(x0+W/2,278,'2560 chips · siempre encendido','in','middle','cpich'); s+=T(0,278,'CPICH');
+ s+=L(x0+sch,166,x0+sch,290,'dash');
+ s+=T(x0,306,'0','tick'); s+=T(x0+sch,306,'256 chips','tick','middle'); s+=T(x0+W,306,'2560 chips','tick','end');
+ return {vb:'0 0 760 316',svg:s};
+}
+function draw4g(){
+ var x0=70,W=670,sf=W/10,sy=sf/14,s='',i;
+ s+=T(0,14,'Trama de 10 ms · 10 subtramas de 1 ms · 2 medias tramas de 5 ms','h');
+ for(i=0;i<10;i++){s+=R(x0+i*sf,40,sf,18,'slot');s+=T(x0+i*sf+sf/2,34,i,'tick','middle')}
+ s+=L(x0+5*sf,28,x0+5*sf,134,'dash');
+ s+=T(0,68,'PSS');s+=T(0,86,'SSS');s+=T(0,104,'PBCH');s+=T(0,124,'CRS');
+ [0,5].forEach(function(k){
+  s+=R(x0+k*sf+6*sy,62,Math.max(5,sy),14,'f-sync','pss');
+  s+=R(x0+k*sf+5*sy,80,Math.max(5,sy),14,'f-sync2','sss');
+ });
+ s+=R(x0+7*sy,98,4*sy,14,'f-bcast','pbch');
+ s+=R(x0,118,W,8,'f-pilot','crs');
+ s+='<polygon points="'+x0+',130 '+(x0+sf)+',130 '+(x0+W)+',160 '+x0+',160" class="conn"/>';
+ s+=T(0,176,'Zoom a la subtrama 0 · 14 símbolos OFDM · eje vertical: frecuencia','h');
+ var cw=W/14,top=190,px=1.2,ctx=30,cH=72*px,cy=top+ctx+cH/2,gy=top+ctx,bot=top+2*ctx+cH;
+ for(i=0;i<14;i++){s+=T(x0+i*cw+cw/2,186,i,'tick','middle')}
+ s+=R(x0,top,W,ctx,'ctx')+R(x0,gy+cH,W,ctx,'ctx');
+ s+=R(x0+6*cw,cy-31*px,cw,62*px,'f-sync','pss');   s+=T(x0+6.5*cw,cy+4,'PSS','in','middle','pss');
+ s+=R(x0+5*cw,cy-31*px,cw,62*px,'f-sync2','sss');  s+=T(x0+5.5*cw,cy+4,'SSS','in','middle','sss');
+ s+=R(x0+7*cw,gy,4*cw,cH,'f-bcast','pbch');        s+=T(x0+9*cw,cy+4,'PBCH · 72 subportadoras','in','middle','pbch');
+ for(i=0;i<=14;i++){s+=L(x0+i*cw,top,x0+i*cw,bot)}
+ s+=L(x0,top,x0+W,top)+L(x0,bot,x0+W,bot)+L(x0,gy,x0+W,gy)+L(x0,gy+cH,x0+W,gy+cH);
+ [0,4,7,11].forEach(function(c,ci){
+  for(var y=top+7+((ci%2)?7:0),j=0;y<bot-3;y+=14,j++){s+='<circle cx="'+(x0+c*cw+cw/2)+'" cy="'+y+'" r="2.4" class="f-pilot" data-k="crs"/>'}
+ });
+ s+=T(x0,bot+16,'Ranura 0','tick');s+=T(x0+7*cw,bot+16,'Ranura 1','tick');
+ s+=T(x0+W,bot+16,'bandas atenuadas: resto de la portadora','tick','end');
+ return {vb:'0 0 760 '+(bot+26),svg:s};
+}
+function draw5g(){
+ var x0=70,W=670,ms=W/20,s='',i;
+ s+=T(0,14,'Dos tramas (20 ms) · una ráfaga SS cada 20 ms por defecto','h');
+ s+=R(x0,40,W/2,20,'slot')+R(x0+W/2,40,W/2,20,'slot');
+ s+=T(x0+8,54,'Trama 0 · 10 ms','tick')+T(x0+W/2+8,54,'Trama 1 · 10 ms','tick');
+ s+=L(x0+5*ms,32,x0+5*ms,112,'dash')+L(x0+15*ms,32,x0+15*ms,112,'dash');
+ s+=T(0,82,'Ráfaga SS');
+ var bw=2*ms/8;
+ for(i=0;i<8;i++){s+=R(x0+i*bw,68,bw-0.5,18,'f-sync','pss sss pbch dmrs beam')}
+ s+=T(x0+2*ms+8,81,'8 SSB = 2 ms (30 kHz), dentro de la media trama de 5 ms','tick');
+ s+=L(x0,104,x0+W,104,'dash'); s+=T(x0+W/2,100,'periodo 20 ms (configurable de 5 a 160 ms)','tick','middle');
+ s+='<polygon points="'+x0+',90 '+(x0+2*ms)+',90 '+(x0+280)+',146 '+x0+',146" class="conn"/>';
+ s+=T(0,164,'Un bloque SSB · 4 símbolos × 240 subportadoras (20 RB)','h');
+ s+=T(440,164,'Barrido de haces de la ráfaga','h');
+ var cw=70,top=190,px=0.8,H=240*px,cy=top+H/2;
+ for(i=0;i<4;i++){s+=T(x0+i*cw+cw/2,184,'símbolo '+i,'tick','middle')}
+ s+=R(x0,top,cw,H,'ctx')+R(x0+2*cw,top,cw,H,'ctx');
+ s+=R(x0,cy-63.5*px,cw,127*px,'f-sync','pss'); s+=T(x0+cw/2,cy+4,'PSS','in','middle','pss');
+ s+=R(x0+2*cw,cy-63.5*px,cw,127*px,'f-sync2','sss'); s+=T(x0+2.5*cw,cy+4,'SSS','in','middle','sss');
+ s+=R(x0+cw,top,cw,H,'f-bcast','pbch'); s+=R(x0+3*cw,top,cw,H,'f-bcast','pbch');
+ s+=R(x0+2*cw,top,cw,48*px,'f-bcast','pbch'); s+=R(x0+2*cw,top+H-48*px,cw,48*px,'f-bcast','pbch');
+ s+=T(x0+1.5*cw,cy+4,'PBCH','in','middle','pbch'); s+=T(x0+3.5*cw,cy+4,'PBCH','in','middle','pbch');
+ [1,3].forEach(function(c){for(var y=top+5;y<top+H-2;y+=12){s+='<circle cx="'+(x0+c*cw+cw*0.78)+'" cy="'+y+'" r="2" class="f-pilot" data-k="dmrs"/>'}});
+ for(var y=top+5;y<top+48*px;y+=12){s+='<circle cx="'+(x0+2*cw+cw*0.78)+'" cy="'+y+'" r="2" class="f-pilot" data-k="dmrs"/>'}
+ for(y=top+H-48*px+5;y<top+H-2;y+=12){s+='<circle cx="'+(x0+2*cw+cw*0.78)+'" cy="'+y+'" r="2" class="f-pilot" data-k="dmrs"/>'}
+ for(i=0;i<=4;i++){s+=L(x0+i*cw,top,x0+i*cw,top+H)}
+ s+=L(x0,top,x0+4*cw,top)+L(x0,top+H,x0+4*cw,top+H);
+ // abanico de haces
+ var cx=585,cyy=top+H-8,r=150,a0=28,da=(180-2*a0)/8,rad=Math.PI/180;
+ for(i=0;i<8;i++){
+  var a1=(a0+i*da)*rad,a2=(a0+(i+1)*da)*rad,am=(a0+(i+.5)*da)*rad;
+  var p='M'+cx+','+cyy+' L'+(cx+r*Math.cos(a1)).toFixed(1)+','+(cyy-r*Math.sin(a1)).toFixed(1)+' A'+r+','+r+' 0 0 0 '+(cx+r*Math.cos(a2)).toFixed(1)+','+(cyy-r*Math.sin(a2)).toFixed(1)+' Z';
+  s+='<path d="'+p+'" class="wedge" data-k="beam" data-i="'+i+'"/>';
+  s+=T((cx+r*0.72*Math.cos(am)).toFixed(1),(cyy-r*0.72*Math.sin(am)+4).toFixed(1),i,'in','middle','beam');
+ }
+ s+='<circle cx="'+cx+'" cy="'+cyy+'" r="5" class="f-data"/>';
+ s+=T(cx,cyy+18,'estación base','tick','middle');
+ return {vb:'0 0 760 '+(top+H+30),svg:s};
+}
+var DRAW={'3g':draw3g,'4g':draw4g,'5g':draw5g};
+
+/* ---------- Sincronía: render e interacción ---------- */
+function renderTech(){
+ var T_=TECH[tech], d=DRAW[tech]();
+ var svg=$('dia'); svg.setAttribute('viewBox',d.vb); svg.innerHTML=d.svg; svg.classList.add('dim');
+ $('sync-intro').textContent=T_.intro; $('dia-cap').textContent=T_.cap;
+ $('legend').innerHTML=T_.legend.map(function(l){return '<span><i class="f-'+l[0]+'"></i>'+l[1]+'</span>'}).join('');
+ var ol=$('steps'); ol.innerHTML='';
+ T_.steps.forEach(function(st,i){
+  var li=document.createElement('li'), b=document.createElement('button');
+  b.type='button'; b.className='step'; b.dataset.i=i;
+  b.innerHTML='<span class="n">'+(i+1)+'</span><span class="tt">'+st.t+'</span><span class="det">'+st.d+'<span class="learn">'+st.learn+'</span></span>';
+  b.addEventListener('click',function(){stopPlay();setStep(i)});
+  li.appendChild(b); ol.appendChild(li);
+ });
+ ['3g','4g','5g'].forEach(function(k){var t=$('tab-'+k);t.setAttribute('aria-selected',k===tech);t.tabIndex=k===tech?0:-1});
+ document.querySelectorAll('#cmp [data-col]').forEach(function(n){n.classList.toggle('cur',n.dataset.col===tech)});
+ setStep(0);
+}
+function setStep(i){
+ var n=TECH[tech].steps.length; step=(i+n)%n;
+ var keys=TECH[tech].steps[step].keys;
+ document.querySelectorAll('#dia [data-k]').forEach(function(el){
+  var on=el.getAttribute('data-k').split(' ').some(function(k){return keys.indexOf(k)>-1});
+  el.classList.toggle('on',on);
+ });
+ document.querySelectorAll('#steps .step').forEach(function(b,j){if(j===step)b.setAttribute('aria-current','step');else b.removeAttribute('aria-current')});
+ clearInterval(beamTimer); document.querySelectorAll('#dia .wedge').forEach(function(w){w.classList.remove('hot')});
+ if(tech==='5g'&&keys.indexOf('beam')>-1){
+  var wd=[].slice.call(document.querySelectorAll('#dia .wedge')),best=3,k=0;
+  if(reduce){wd[best].classList.add('hot')}
+  else{beamTimer=setInterval(function(){wd.forEach(function(w){w.classList.remove('hot')});wd[k%8].classList.add('hot');k++;if(k>=8+0){k=0}},420)}
+ }
+}
+function stopPlay(){playing=false;clearInterval(timer);$('play').textContent='Reproducir secuencia';$('play').setAttribute('aria-pressed','false')}
+function startPlay(){playing=true;$('play').textContent='Pausar secuencia';$('play').setAttribute('aria-pressed','true');timer=setInterval(function(){setStep(step+1)},3800)}
+
+/* ---------- Power boosting ---------- */
+function model(t,p){
+ var b=lin(p.boost),out={},f,e0;
+ if(t==='3g'){
+  var c=0.10,k=1.5, base={pilot:c,common:c*(k-1),data:1-c*k};
+  var cur={pilot:c*b,common:c*(k-1)*b,data:1-c*k*b};
+  out.pilotLevel=p.ptot+dB(c)+p.boost; out.pilotUnit='dBm';
+  out.pilotSub='CPICH (sin boost: '+nf(p.ptot+dB(c),1)+' dBm)';
+  out.dataDelta=dB(cur.data/base.data); out.dataSub='potencia disponible para tráfico';
+  out.pilotGain=p.boost; out.base=base; out.cur=cur; out.dataLevel=cur.data;
+  out.curve=function(x){var bb=lin(x);return {g:x,c:dB(Math.max(1e-3,(1-c*k*bb))/base.data)}};
+ }else{
+  var nsc=BWS[t].filter(function(r){return r[0]===p.bw})[0][1];
+  f=(t==='4g')?16/168:Math.min(1,240/nsc);
+  e0=p.ptot-dB(nsc);
+  var den=1+f*(b-1);
+  out.pilotGain=dB(b/den); out.dataDelta=-dB(den);
+  out.pilotLevel=e0+out.pilotGain; out.pilotUnit='dBm/RE';
+  out.pilotSub=(t==='4g'?'RS por RE':'SSB por RE')+' (sin boost: '+nf(e0,1)+' dBm)';
+  out.dataSub=t==='4g'?'potencia por RE de datos':'potencia por RE de datos (en los símbolos del SSB)';
+  out.base={pilot:f,data:1-f}; out.cur={pilot:f*b/den,data:(1-f)/den};
+  out.f=f; out.nsc=nsc;
+  out.curve=function(x){var bb=lin(x),dd=1+f*(bb-1);return {g:dB(bb/dd),c:-dB(dd)}};
+ }
+ out.edge=out.pilotGain+(t==='5g'?p.beam:0);
+ out.rad=Math.pow(10,out.edge/(10*p.env))-1;
+ out.area=Math.pow(1+out.rad,2)-1;
+ return out;
+}
+function kpi(k,v,s){return '<div class="card kpi"><div class="k">'+k+'</div><div class="v">'+v+'</div><div class="s">'+s+'</div></div>'}
+function seg(cls,share,label){var pc=share*100;return '<div class="f-'+cls+'" style="background:var(--'+(cls==='bcast'?'bcast':cls)+');flex:'+Math.max(pc,0.01)+' 1 0" title="'+label+' '+nf(pc,1)+' %">'+(pc>=9?nf(pc,0)+' %':'')+'</div>'}
+function renderPower(){
+ var p=P[tech],D=DEF[tech],m=model(tech,p),pil=TECH[tech].pilot;
+ $('pw-intro').textContent=TECH[tech].intro2;
+ var pt=$('ptot');pt.min=D.min;pt.max=D.max;pt.value=p.ptot; $('o-ptot').textContent=p.ptot+' dBm ('+nf(lin(p.ptot-30),0)+' W)';
+ $('boost').value=p.boost; $('o-boost').textContent=sg(p.boost,1)+' dB';
+ $('f-bw').style.display=tech==='3g'?'none':''; $('f-beam').style.display=tech==='5g'?'':'none';
+ if(tech!=='3g'){var sel=$('bw');sel.innerHTML=BWS[tech].map(function(r){return '<option value="'+r[0]+'"'+(r[0]===p.bw?' selected':'')+'>'+r[0]+' MHz · '+r[1]+' subportadoras</option>'}).join('')}
+ $('beam').value=p.beam; $('o-beam').textContent='+'+p.beam+' dB';
+ $('env').value=String(p.env);
+ $('where').innerHTML=TECH[tech].where;
+ var dataTxt=sg(m.dataDelta,1);
+ $('out').innerHTML=
+  kpi('Nivel del piloto ('+pil+')',nf(m.pilotLevel,1)+' <small style="font-size:13px">'+m.pilotUnit+'</small>',m.pilotSub)+
+  kpi('Efecto en los datos',dataTxt+' dB',m.dataSub)+
+  kpi('Ganancia en el borde',sg(m.edge,1)+' dB',tech==='5g'?'boost efectivo + beamforming':'efecto neto sobre el piloto')+
+  kpi('Radio de la celda',sg(m.rad*100,0)+' %','área '+sg(m.area*100,0)+' % frente a sin boost');
+ var h='',row=function(lab,s){return '<div class="brow"><span>'+lab+'</span><div class="bar">'+s+'</div></div>'};
+ if(tech==='3g'){
+  h+=row('Sin boost',seg('pilot',m.base.pilot,'CPICH')+seg('bcast',m.base.common,'Otros comunes')+seg('data',m.base.data,'Tráfico'));
+  h+=row('Con boost',seg('pilot',m.cur.pilot,'CPICH')+seg('bcast',m.cur.common,'Otros comunes')+seg('data',m.cur.data,'Tráfico'));
+  h+='<div class="legend"><span><i class="f-pilot"></i>CPICH</span><span><i class="f-bcast"></i>Otros canales comunes</span><span><i class="f-data"></i>Tráfico de usuarios</span></div>';
+ }else{
+  var nm=tech==='4g'?'RS':'SSB';
+  h+=row('Sin boost',seg('pilot',m.base.pilot,nm)+seg('data',m.base.data,'Datos'));
+  h+=row('Con boost',seg('pilot',m.cur.pilot,nm)+seg('data',m.cur.data,'Datos'));
+  h+='<div class="legend"><span><i class="f-pilot"></i>'+(tech==='4g'?'Elementos de recurso con CRS':'Subportadoras del SSB')+' ('+nf(m.f*100,1)+' % de los RE'+(tech==='5g'?' en esos símbolos':'')+')</span><span><i class="f-data"></i>Datos</span></div>';
+ }
+ $('bars').innerHTML=h;
+ drawChart(m,p);
+ var ins;
+ if(tech==='3g'){ins='Con '+sg(p.boost,1)+' dB el CPICH sube a '+nf(m.pilotLevel,1)+' dBm y la celda se amplía '+nf(m.rad*100,0)+' %. A cambio, el tráfico baja de '+nf(m.base.data*100,0)+' % a '+nf(m.cur.data*100,0)+' % de la potencia y aparece más contaminación de piloto en las vecinas.'}
+ else if(tech==='4g'){ins='Con '+sg(p.boost,1)+' dB de boost, el CRS gana '+nf(m.pilotGain,1)+' dB reales (no los '+nf(p.boost,1)+' nominales, porque la potencia total es fija) y los datos pierden '+nf(-m.dataDelta,1)+' dB. El radio crece '+nf(m.rad*100,0)+' %.'}
+ else{ins='El boost del SSB aporta '+sg(m.pilotGain,1)+' dB y el beamforming otros '+sg(p.beam,0)+' dB. Total en el borde: '+sg(m.edge,1)+' dB, con un radio '+nf(m.rad*100,0)+' % mayor. Con '+p.bw+' MHz el SSB ocupa el '+nf(m.f*100,0)+' % de las subportadoras, y por eso el boost sale más caro en canales angostos.'}
+ $('insight').textContent=ins;
+}
+function drawChart(m,p){
+ var X0=52,X1=600,Y0=14,Y1=214,vmin=-5,vmax=7,s='',i;
+ var px=function(x){return X0+(x/6)*(X1-X0)}, py=function(v){return Y0+(vmax-v)/(vmax-vmin)*(Y1-Y0)};
+ for(var v=-4;v<=6;v+=2){s+=L(X0,py(v),X1,py(v))+T(X0-8,py(v)+3,(v>0?'+':v<0?'−':'')+Math.abs(v),'tick','end')}
+ s+=L(X0,py(0),X1,py(0)).replace('class="grid"','class="dash"');
+ for(i=0;i<=6;i++){s+=T(px(i),Y1+16,i,'tick','middle')}
+ s+=T((X0+X1)/2,Y1+32,'Boost aplicado al piloto (dB)','lbl','middle');
+ s+=T(4,Y0+4,'dB','tick');
+ var g=[],c=[];
+ for(i=0;i<=24;i++){var x=i/4,r=m.curve(x);g.push(px(x).toFixed(1)+','+py(r.g).toFixed(1));c.push(px(x).toFixed(1)+','+py(Math.max(vmin,r.c)).toFixed(1))}
+ s+='<polyline points="'+g.join(' ')+'" fill="none" stroke="var(--pilot)" stroke-width="2.4"/>';
+ s+='<polyline points="'+c.join(' ')+'" fill="none" stroke="var(--boost)" stroke-width="2.4"/>';
+ var cur=m.curve(p.boost);
+ s+='<line x1="'+px(p.boost)+'" y1="'+Y0+'" x2="'+px(p.boost)+'" y2="'+Y1+'" class="dash"/>';
+ s+='<circle cx="'+px(p.boost)+'" cy="'+py(cur.g)+'" r="4.5" fill="var(--pilot)"/><circle cx="'+px(p.boost)+'" cy="'+py(Math.max(vmin,cur.c))+'" r="4.5" fill="var(--boost)"/>';
+ s+=T(X1+8,py(m.curve(6).g)+4,'piloto','lbl');
+ s+=T(X1+8,py(Math.max(vmin,m.curve(6).c))+4,'datos','lbl');
+ $('chart').setAttribute('viewBox','0 0 660 '+(Y1+42)); $('chart').innerHTML=s;
+}
+
+/* ---------- Tabla comparativa ---------- */
+function renderTable(){
+ var rows=[
+  ['Señales de sincronía','P-SCH y S-SCH','PSS y SSS','PSS y SSS dentro del SSB'],
+  ['Identidades de celda','512 códigos de scrambling','504 PCI','1008 PCI'],
+  ['Cada cuánto se repiten','Cada ranura (0,667 ms)','Cada 5 ms','Cada 20 ms por defecto (5 a 160 ms)'],
+  ['Señal de referencia','CPICH continuo','CRS en todas las subtramas','DMRS del PBCH, sin piloto continuo'],
+  ['Cómo se reparte la cobertura','Sector con cobertura amplia','Sector con cobertura amplia','Haces que barren el sector'],
+  ['Dónde va el boost','Potencia del CPICH','referenceSignalPower y PB/PA','Potencia del SSB y ganancia de haz']
+ ];
+ var cols=['3g','4g','5g'];
+ var h='<thead><tr><th></th><th data-col="3g">3G · WCDMA</th><th data-col="4g">4G · LTE</th><th data-col="5g">5G · NR</th></tr></thead><tbody>';
+ rows.forEach(function(r){h+='<tr><td>'+r[0]+'</td>'+cols.map(function(c,i){return '<td data-col="'+c+'">'+r[i+1]+'</td>'}).join('')+'</tr>'});
+ $('cmp').innerHTML=h+'</tbody>';
+}
+
+/* ---------- Eventos ---------- */
+function go(t){if(!TECH[t])t='3g';tech=t;stopPlay();renderTech();renderPower();try{if(location.hash!=='#'+t)history.replaceState(null,'','#'+t)}catch(e){}}
+document.querySelectorAll('.tab').forEach(function(b){b.addEventListener('click',function(){go(b.dataset.t)})});
+$('prev').addEventListener('click',function(){stopPlay();setStep(step-1)});
+$('next').addEventListener('click',function(){stopPlay();setStep(step+1)});
+$('play').addEventListener('click',function(){playing?stopPlay():startPlay()});
+$('ptot').addEventListener('input',function(e){P[tech].ptot=+e.target.value;renderPower()});
+$('boost').addEventListener('input',function(e){P[tech].boost=+e.target.value;renderPower()});
+$('beam').addEventListener('input',function(e){P[tech].beam=+e.target.value;renderPower()});
+$('bw').addEventListener('change',function(e){P[tech].bw=+e.target.value;renderPower()});
+$('env').addEventListener('change',function(e){P[tech].env=+e.target.value;renderPower()});
+window.addEventListener('hashchange',function(){var t=location.hash.slice(1);if(TECH[t]&&t!==tech)go(t)});
+$('copy').addEventListener('click',function(){
+ var url=location.href, fb=$('fallback'), msg=$('copied');
+ var fail=function(){fb.hidden=false;fb.value=url;fb.focus();fb.select();msg.textContent='Copia el enlace con Ctrl+C'};
+ try{navigator.clipboard.writeText(url).then(function(){msg.textContent='Enlace copiado';fb.hidden=true},fail)}catch(e){fail()}
+});
+renderTable();
+var t0=location.hash.slice(1); go(TECH[t0]?t0:'3g');
+})();
+</script>
+
+</body>
+</html>
