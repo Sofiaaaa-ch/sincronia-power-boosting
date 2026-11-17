@@ -173,11 +173,6 @@ svg .cell.sel{fill:var(--sync);opacity:1}
   <p class="eyebrow">Apuntes interactivos de radio</p>
   <h1>Sincronía y power boosting en 3G, 4G y 5G</h1>
   <p class="lead">Elige una tecnología, recorre los pasos con los que el móvil encuentra la celda y mueve los controles de potencia para ver cuánta cobertura se gana y qué se paga por ella.</p>
-  <div class="actions">
-    <button class="btn" id="copy" type="button">Copiar enlace de esta página</button>
-    <span id="copied" role="status"></span>
-    <input id="fallback" type="text" readonly hidden aria-label="Enlace de la página">
-  </div>
 </div></header>
 
 <nav class="tabs" aria-label="Tecnología"><div class="wrap" role="tablist">
@@ -784,11 +779,6 @@ $('beam').addEventListener('input',function(e){P[tech].beam=+e.target.value;rend
 $('bw').addEventListener('change',function(e){P[tech].bw=+e.target.value;renderPower()});
 $('env').addEventListener('change',function(e){P[tech].env=+e.target.value;renderPower()});
 window.addEventListener('hashchange',function(){var t=location.hash.slice(1);if(TECH[t]&&t!==tech)go(t)});
-$('copy').addEventListener('click',function(){
- var url=location.href, fb=$('fallback'), msg=$('copied');
- var fail=function(){fb.hidden=false;fb.value=url;fb.focus();fb.select();msg.textContent='Copia el enlace con Ctrl+C'};
- try{navigator.clipboard.writeText(url).then(function(){msg.textContent='Enlace copiado';fb.hidden=true},fail)}catch(e){fail()}
-});
 renderTable();initNotes();
 var t0=location.hash.slice(1); go(TECH[t0]?t0:'3g');
 })();
