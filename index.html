@@ -116,7 +116,54 @@ tr.cur td,th.cur{background:color-mix(in srgb,var(--accent) 8%,transparent)}
 footer{padding-block:12px 48px;color:var(--muted);font-size:13px;max-width:90ch}
 footer p+p{margin-top:8px}
 
-@media (max-width:860px){.sync,.power{grid-template-columns:minmax(0,1fr)}}
+[hidden]{display:none!important}
+.notes{display:grid;grid-template-columns:240px minmax(0,1fr);gap:24px;align-items:start}
+.nside{position:sticky;top:12px;display:flex;flex-direction:column;gap:12px;min-width:0}
+.nsearch{width:100%;font:inherit;padding:8px 10px;border-radius:6px;border:1px solid var(--line);background:var(--surface);color:var(--ink)}
+.nprog{font:12px var(--mono);color:var(--muted)}
+.nidx{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:2px}
+.nidx button{width:100%;text-align:left;background:none;border:0;border-radius:6px;padding:7px 8px;display:grid;grid-template-columns:18px 1fr;gap:8px;font-size:14px;color:var(--ink)}
+.nidx button:hover{background:var(--surface)}
+.chk{width:16px;height:16px;border:1.5px solid var(--line);border-radius:4px;margin-top:3px;display:grid;place-items:center;font-size:11px;line-height:1}
+.chk.on{background:var(--bcast);border-color:var(--bcast);color:var(--on)}
+.chk.on::after{content:"✓"}
+.ntools{display:flex;gap:8px;flex-wrap:wrap}
+.ntools .btn{padding:6px 10px;font-size:13px}
+.ntopics{display:flex;flex-direction:column;gap:12px;min-width:0}
+.ntopic summary{cursor:pointer;list-style:none;padding:14px 16px;display:grid;grid-template-columns:30px 1fr;gap:12px;align-items:center}
+.ntopic summary::-webkit-details-marker{display:none}
+.ntopic summary b{font-size:16px;font-weight:600;display:block}
+.ntopic summary small{color:var(--muted);font-size:13px}
+.ntopic summary:focus-visible{outline:2px solid var(--accent);outline-offset:-2px;border-radius:10px}
+.nnum{font:500 13px var(--mono);width:28px;height:28px;border-radius:50%;border:1px solid var(--line);display:grid;place-items:center;color:var(--muted)}
+.ntopic[open] .nnum{background:var(--accent);border-color:var(--accent);color:var(--on)}
+.nbody{padding:14px 16px 16px;display:flex;flex-direction:column;gap:14px;border-top:1px solid var(--line);min-width:0}
+.nbody p{max-width:75ch}
+.kv{display:grid;grid-template-columns:minmax(110px,170px) minmax(0,1fr);gap:8px 16px;margin:0}
+.kv dt{font-weight:600;color:var(--muted);font-size:13px}
+.kv dd{margin:0}
+.nbody ul.pts{margin:0;padding-left:20px;display:flex;flex-direction:column;gap:4px}
+.comp{font-size:13px;color:var(--muted);border:1px dashed var(--line);border-radius:6px;padding:8px 10px}
+.comp span{font:500 11px var(--mono);letter-spacing:.08em;text-transform:uppercase;color:var(--ink);margin-right:8px}
+.wid{border:1px solid var(--line);border-radius:8px;padding:12px;background:var(--bg);display:flex;flex-direction:column;gap:10px;min-width:0}
+.wid h4{margin:0;font-size:13px;color:var(--muted);font-weight:600}
+.seg{display:flex;gap:6px;flex-wrap:wrap}
+.btn[aria-pressed="true"],.btn[aria-checked="true"]{background:var(--accent);border-color:var(--accent);color:var(--on)}
+.bwtab{display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:6px}
+.bwtab .btn{display:flex;justify-content:space-between;gap:8px;padding:7px 10px}
+.mini{display:grid;grid-template-columns:repeat(auto-fit,minmax(130px,1fr));gap:8px}
+.mini div{background:var(--surface);border:1px solid var(--line);border-radius:6px;padding:8px 10px}
+.mini span{display:block;font-size:12px;color:var(--muted)}
+.mini b{font:500 18px var(--mono);font-variant-numeric:tabular-nums}
+.mini small{display:block;font-size:12px;color:var(--muted)}
+.done{display:flex;gap:8px;align-items:center;font-size:13px;color:var(--muted)}
+.numin{font:inherit;padding:6px 8px;width:110px;border:1px solid var(--line);border-radius:6px;background:var(--surface);color:var(--ink)}
+.frow{display:flex;gap:14px;flex-wrap:wrap;align-items:end}
+.frow label{display:flex;flex-direction:column;gap:4px;font-size:13px;color:var(--muted)}
+.res{font:500 15px var(--mono);font-variant-numeric:tabular-nums}
+svg .cell{fill:var(--line);opacity:.55}
+svg .cell.sel{fill:var(--sync);opacity:1}
+@media (max-width:860px){.sync,.power,.notes{grid-template-columns:minmax(0,1fr)}.nside{position:static}.kv{grid-template-columns:minmax(0,1fr);gap:2px}.kv dd{margin-bottom:8px}}
 @media (prefers-reduced-motion:reduce){.dim [data-k],.bar div{transition:none}}
 </style>
 
@@ -158,6 +205,25 @@ footer p+p{margin-top:8px}
       <p class="cap" id="dia-cap"></p>
     </div>
   </div>
+</section>
+
+<section id="notes" aria-labelledby="h-notes" hidden>
+  <h2 id="h-notes">Mis apuntes de 4G</h2>
+  <p class="sub">Todo lo de los cuadernos, ordenado de lo general a lo particular. Busca por palabra, marca lo que ya repasaste y prueba los cálculos.</p>
+  <div class="notes">
+    <aside class="nside">
+      <input class="nsearch" id="nsearch" type="search" placeholder="Buscar: PCI, RB, TDD…" aria-label="Buscar en los apuntes">
+      <div class="nprog" id="nprog" role="status"></div>
+      <ul class="nidx" id="nidx"></ul>
+      <div class="ntools">
+        <button class="btn" id="nopen" type="button">Abrir todo</button>
+        <button class="btn" id="nclose" type="button">Cerrar todo</button>
+        <button class="btn" id="nreset" type="button">Reiniciar repaso</button>
+      </div>
+    </aside>
+    <div class="ntopics" id="ntopics"></div>
+  </div>
+  <p class="sub" id="nnone" hidden style="margin-top:12px">Ningún apunte coincide con esa búsqueda.</p>
 </section>
 
 <section aria-labelledby="h-pw">
@@ -226,7 +292,7 @@ var TECH={
  '4g':{
   intro:'En LTE hay 504 identidades de celda (PCI) y se obtienen con dos señales cortas en el centro de la banda, sin importar el ancho de banda del canal.',
   steps:[
-   {t:'PSS: símbolo y media trama',keys:['pss'],d:'Secuencia Zadoff-Chu de 62 subportadoras en el centro de la banda, cada 5 ms. Hay tres secuencias posibles.',learn:'Aprende: temporización de símbolo, medias tramas de 5 ms y NID2 (0 a 2).'},
+   {t:'PSS: símbolo y media trama',keys:['pss'],d:'Secuencia Zadoff-Chu de 62 subportadoras en el centro de la banda, cada 5 ms. Hay tres secuencias posibles.',learn:'Aprende: sincronización de tiempo y de frecuencia, y el ID físico parcial de la celda (NID2, 0 a 2).'},
    {t:'SSS: trama e identidad',keys:['sss'],d:'Va en el símbolo anterior al PSS. Una de 168 secuencias, distinta en las subtramas 0 y 5, así que también marca el inicio de la trama.',learn:'Aprende: inicio de trama (10 ms), NID1 (0 a 167) y PCI = 3 × NID1 + NID2.'},
    {t:'CRS: medir la celda',keys:['crs'],d:'Señal de referencia presente en todas las subtramas y en todo el ancho de banda. Su posición en frecuencia depende del PCI. Aquí se aplica el power boosting.',learn:'Aprende: RSRP y RSRQ, y obtiene la estimación de canal para decodificar.'},
    {t:'PBCH: el MIB',keys:['pbch'],d:'Cuatro símbolos en la subtrama 0, sobre las 72 subportadoras centrales. Se repite cada 10 ms dentro de un ciclo de 40 ms.',learn:'Aprende: ancho de banda del canal, configuración del PHICH y SFN.'}],
@@ -490,8 +556,224 @@ function renderTable(){
  $('cmp').innerHTML=h+'</tbody>';
 }
 
+/* ---------- Apuntes 4G ---------- */
+var NOTES=[
+ {id:'n-lte',t:'4G LTE: qué es y cómo transmite',s:'Objetivo, OFDMA, OFDM y ancho de banda',h:`
+  <p>Diseñado para <b>altas velocidades de datos</b>, <b>baja latencia</b> y un <b>uso eficiente del espectro</b>. En general, 4G se maneja en tres bandas: <b>700</b>, <b>1900</b> y <b>AWS</b>.</p>
+  <dl class="kv">
+   <dt>Técnica de acceso</dt><dd>OFDMA (Orthogonal Frequency Division Multiple Access). Es lo que usa 4G para el <i>downlink</i>.</dd>
+   <dt>Modulación</dt><dd>OFDM (Orthogonal Frequency Division Multiplexing). A diferencia de 3G, que tiene una portadora «continua», aquí el canal se divide en muchas <b>subportadoras</b>.</dd>
+   <dt>Ancho de banda</dt><dd>Los más comunes son 10 MHz y 20 MHz, según el espectro disponible del operador. Se divide en subportadoras ortogonales agrupadas en <b>Resource Blocks (RB)</b>, y cada usuario recibe bloques en frecuencia durante instantes de tiempo.</dd>
+  </dl>
+  <p class="comp"><span>Complemento</span>En el uplink, LTE usa SC-FDMA, una variante de OFDM con menor relación entre pico y promedio de potencia.</p>`},
+ {id:'n-rb',t:'Recursos: Resource Block y Resource Element',s:'RB, tabla oficial de anchos de banda y RE',h:`
+  <dl class="kv">
+   <dt>Resource Block (RB)</dt><dd>Unidad mínima de asignación en LTE. Ocupa <b>180 kHz</b> en frecuencia: 12 subportadoras × 15 kHz (subportadora fija). <b>1 RB = 180 kHz.</b></dd>
+   <dt>Resource Element (RE)</dt><dd>Unidad mínima de recursos radio en 4G. Es un solo punto de la rejilla tiempo-frecuencia: <b>1 subportadora × 1 símbolo OFDM</b>.</dd>
+  </dl>
+  <div class="wid"><h4>Tabla oficial LTE. Elige un ancho de banda</h4>
+   <div class="bwtab" id="bwtab" role="radiogroup" aria-label="Ancho de banda LTE"></div>
+   <div class="mini" id="bwout"></div>
+   <p class="cap" style="margin:0">Nota de los apuntes: estas cantidades de RB siempre se mantienen, <b>nunca cambian</b>.</p>
+  </div>
+  <div class="wid"><h4>Cuántos RE hay en un RB (CP normal)</h4>
+   <div class="seg" id="remode" role="radiogroup" aria-label="Qué resaltar">
+    <button class="btn" type="button" role="radio" data-m="re">1 RE</button>
+    <button class="btn" type="button" role="radio" data-m="freq">En frecuencia</button>
+    <button class="btn" type="button" role="radio" data-m="time">En tiempo</button>
+    <button class="btn" type="button" role="radio" data-m="rb">RB completo</button>
+   </div>
+   <div class="svgwrap"><svg id="resvg" role="img" aria-label="Rejilla de 12 subportadoras por 14 símbolos" style="min-width:480px"></svg></div>
+   <p class="res" id="reout"></p>
+  </div>`},
+ {id:'n-tiempo',t:'Tiempo en LTE: frame, subframe, slot y prefijo cíclico',s:'Organización del tiempo y CP normal',h:`
+  <dl class="kv">
+   <dt>Organización</dt><dd>1 frame = 10 ms. 1 subframe = 1 ms, y contiene 2 slots. 1 slot = 0,5 ms.</dd>
+   <dt>Slot</dt><dd>Bloque de tiempo fijo donde se transmiten los símbolos OFDM.</dd>
+   <dt>Con CP normal</dt><dd>1 subframe contiene 14 símbolos: 2 slots por subframe y 7 símbolos OFDM por slot.</dd>
+   <dt>Prefijo cíclico (CP)</dt><dd>Un trozo del símbolo OFDM que se copia y se pone al inicio.</dd>
+   <dt>¿Para qué sirve?</dt><dd>1) Combatir la interferencia entre símbolos (ISI). 2) Hacer el sistema más robusto frente al multitrayecto.</dd>
+   <dt>¿Qué pasa si es «normal»?</dt><dd>El prefijo es más corto, así que se aprovecha mejor el tiempo y hay mayor eficiencia. También funciona bien cuando el retardo del canal no es muy grande.</dd>
+   <dt>CP y sincronización</dt><dd>El CP ayuda a la sincronización fina temporal. Como es una copia del final del símbolo OFDM, el receptor puede correlacionar CP con símbolo. Eso permite detectar el inicio del símbolo y ajustar el timing dentro de un margen seguro.</dd>
+  </dl>
+  <div class="wid"><h4>Del frame al símbolo</h4>
+   <div class="seg" id="cpmode" role="radiogroup" aria-label="Tipo de prefijo cíclico">
+    <button class="btn" type="button" role="radio" data-cp="n">CP normal</button>
+    <button class="btn" type="button" role="radio" data-cp="e">CP extendido (complemento)</button>
+   </div>
+   <div class="svgwrap"><svg id="tsvg" role="img" aria-label="Frame, subframe, slot y símbolos OFDM" style="min-width:600px"></svg></div>
+   <div class="legend"><span><i class="f-sync2"></i>Prefijo cíclico</span><span><i class="f-pilot"></i>Parte útil del símbolo</span></div>
+   <div class="mini" id="tout"></div>
+  </div>
+  <p class="comp"><span>Complemento</span>El CP extendido se usa con retardos de canal grandes: queda 12 símbolos por subframe (6 por slot) y menos eficiencia.</p>`},
+ {id:'n-duplex',t:'Duplexación: FDD y TDD',s:'Frecuencias de FDD, subframes de TDD y sincronización estricta',h:`
+  <div class="wid"><h4>Compara cómo se reparten bajada (DL) y subida (UL)</h4>
+   <div class="seg" id="dxmode" role="radiogroup" aria-label="Tipo de duplexación">
+    <button class="btn" type="button" role="radio" data-dx="fdd">FDD · Frequency Division Duplex</button>
+    <button class="btn" type="button" role="radio" data-dx="tdd">TDD · Time Division Duplex</button>
+   </div>
+   <div class="svgwrap"><svg id="dxsvg" role="img" aria-label="Diagrama FDD o TDD" style="min-width:600px"></svg></div>
+   <div id="dxinfo"></div>
+  </div>
+  <p class="comp"><span>Complemento</span>El rango de FDD de los apuntes (DL 1805–1880 MHz, UL 1710–1785 MHz) corresponde a la banda 3 (1800 MHz).</p>`},
+ {id:'n-sync',t:'Sincronización LTE: PSS, SSS y PCI',s:'Señales dedicadas de sincronización y cálculo del PCI',h:`
+  <p>Para la sincronización primaria se usan <b>señales dedicadas</b>. Siempre están en los <b>subframes 0 y 5</b>, en el centro del ancho de banda.</p>
+  <dl class="kv">
+   <dt>① PSS</dt><dd><b>Primary Synchronization Signal.</b> Sincronización de tiempo y frecuencia.</dd>
+   <dt>Se usa para</dt><dd>1) Sincronización temporal gruesa (inicio del subframe). 2) Sincronización en frecuencia: corrige el offset de frecuencia. 3) Obtener el <b>ID físico parcial de la celda</b>, NID2 ∈ {0, 1, 2}.</dd>
+   <dt>Datos técnicos</dt><dd>Robustez sobre cantidad. a) Hay solo <b>3 secuencias</b> posibles. b) Identifica el NID2. c) Se transmite cada <b>5 ms</b>. d) Está en el centro del espectro. e) Usa secuencias <b>Zadoff-Chu</b>.</dd>
+   <dt>② SSS</dt><dd><b>Secondary Synchronization Signal.</b></dd>
+   <dt>Se usa para</dt><dd>1) Identificar la celda exacta. 2) Obtener el cell ID. 3) Sincronización fina.</dd>
+   <dt>Datos técnicos</dt><dd>a) Hay <b>168 combinaciones</b>. b) Identifica el NID1. c) Junto con el PSS forma el <b>PCI</b> (Physical Cell ID): <b>PCI = 3 × NID1 + NID2</b>.</dd>
+  </dl>
+  <div class="seg"><button class="btn" type="button" data-step="0">Ver el PSS en el diagrama</button><button class="btn" type="button" data-step="1">Ver el SSS en el diagrama</button></div>
+  <div class="wid"><h4>Calculadora de PCI</h4>
+   <div class="frow">
+    <label for="nid1">NID1 (0 a 167)<input class="numin" id="nid1" type="number" min="0" max="167" step="1" value="50"></label>
+    <label for="nid2">NID2 (0 a 2)<select id="nid2" style="width:90px"><option>0</option><option>1</option><option selected>2</option></select></label>
+    <label for="pciin">o escribe el PCI (0 a 503)<input class="numin" id="pciin" type="number" min="0" max="503" step="1" value="152"></label>
+   </div>
+   <p class="res" id="pciout"></p>
+  </div>
+  <p class="comp"><span>Complemento</span>3 secuencias de PSS × 168 de SSS = 504 PCI (0 a 503). Dos celdas vecinas con el mismo PCI mod 3 transmiten el mismo PSS y se interfieren en la sincronización, por eso se planifica el PCI.</p>`},
+ {id:'n-pot',t:'Potencia: de watts a dBm',s:'20 W × 0,10 = 2 W = 33 dBm',h:`
+  <p>Ejemplo de los apuntes: <b>20 W × 0,10 = 2 W</b>, y <b>2 W = 33 dBm</b>. Es el valor típico de cobertura del piloto en 3G (CPICH al 10 % del amplificador).</p>
+  <div class="wid"><h4>Convierte la potencia del piloto</h4>
+   <div class="frow">
+    <label for="pw-w">Potencia total (W)<input class="numin" id="pw-w" type="number" min="0.1" step="0.1" value="20"></label>
+    <label for="pw-p">Porcentaje para el piloto <output id="pw-po" class="res" style="font-size:13px"></output><input type="range" id="pw-p" min="1" max="30" step="1" value="10" style="width:220px"></label>
+   </div>
+   <p class="res" id="pw-out"></p>
+  </div>
+  <p class="comp"><span>Fórmula</span>dBm = 10 · log10(potencia en mW). Cada +3 dB equivale a duplicar la potencia. El efecto de subir el piloto está en la sección de power boosting, más abajo.</p>`}
+];
+function nz(s){return s.toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g,'')}
+function initNotes(){
+ var host=$('ntopics'),idx=$('nidx'),done={};
+ try{(JSON.parse(localStorage.getItem('apuntes4g')||'[]')).forEach(function(k){done[k]=1})}catch(e){}
+ host.innerHTML=NOTES.map(function(n,i){return '<details class="card ntopic" id="'+n.id+'" open><summary><span class="nnum">'+(i+1)+'</span><span><b>'+n.t+'</b><small>'+n.s+'</small></span></summary><div class="nbody">'+n.h+'<label class="done"><input type="checkbox" data-done="'+n.id+'"> Marcar como repasado</label></div></details>'}).join('');
+ idx.innerHTML=NOTES.map(function(n,i){return '<li data-li="'+n.id+'"><button type="button" data-go="'+n.id+'"><span class="chk" data-chk="'+n.id+'"></span><span>'+(i+1)+'. '+n.t+'</span></button></li>'}).join('');
+ NOTES.forEach(function(n){n.nz=nz($(n.id).textContent+' '+n.t+' '+n.s)});
+ function persist(){try{localStorage.setItem('apuntes4g',JSON.stringify(Object.keys(done)))}catch(e){}}
+ function paint(){
+  var c=0;NOTES.forEach(function(n){var on=!!done[n.id];if(on)c++;
+   idx.querySelector('[data-chk="'+n.id+'"]').classList.toggle('on',on);
+   host.querySelector('[data-done="'+n.id+'"]').checked=on});
+  $('nprog').textContent='Repasados: '+c+' de '+NOTES.length;
+ }
+ function filter(){
+  var q=nz($('nsearch').value.trim()),any=false;
+  NOTES.forEach(function(n){var ok=!q||n.nz.indexOf(q)>-1;$(n.id).hidden=!ok;idx.querySelector('[data-li="'+n.id+'"]').hidden=!ok;if(ok)any=true});
+  $('nnone').hidden=any;
+ }
+ host.addEventListener('change',function(e){var k=e.target.getAttribute('data-done');if(!k)return;if(e.target.checked)done[k]=1;else delete done[k];persist();paint()});
+ idx.addEventListener('click',function(e){
+  var b=e.target.closest('[data-go]');if(!b)return;
+  $('nsearch').value='';filter();
+  var d=$(b.getAttribute('data-go'));d.open=true;d.scrollIntoView({behavior:reduce?'auto':'smooth',block:'start'});
+ });
+ $('nsearch').addEventListener('input',function(){filter();var q=$('nsearch').value.trim();if(q)NOTES.forEach(function(n){$(n.id).open=true})});
+ $('nopen').addEventListener('click',function(){NOTES.forEach(function(n){$(n.id).open=true})});
+ $('nclose').addEventListener('click',function(){NOTES.forEach(function(n){$(n.id).open=false})});
+ $('nreset').addEventListener('click',function(){done={};persist();paint()});
+ paint();
+
+ /* RB: tabla y rejilla de RE */
+ var BWL=[[1.4,6],[3,15],[5,25],[10,50],[15,75],[20,100]],bwSel=20;
+ function drawBW(){
+  $('bwtab').innerHTML=BWL.map(function(r){return '<button type="button" class="btn" role="radio" aria-checked="'+(r[0]===bwSel)+'" data-bw="'+r[0]+'"><span>'+nf(r[0],r[0]<2?1:0)+' MHz</span><b>'+r[1]+' RB</b></button>'}).join('');
+  var rb=BWL.filter(function(r){return r[0]===bwSel})[0][1],occ=rb*0.18;
+  $('bwout').innerHTML='<div><span>Subportadoras</span><b>'+(rb*12)+'</b><small>'+rb+' RB × 12</small></div><div><span>RE por subframe</span><b>'+(rb*168)+'</b><small>'+rb+' RB × 168</small></div><div><span>Ancho ocupado</span><b>'+nf(occ,2)+' MHz</b><small>'+nf(occ/bwSel*100,0)+' % del canal de '+nf(bwSel,bwSel<2?1:0)+' MHz</small></div>';
+ }
+ $('bwtab').addEventListener('click',function(e){var b=e.target.closest('[data-bw]');if(!b)return;bwSel=+b.getAttribute('data-bw');drawBW()});
+ drawBW();
+ var reMode='re';
+ function drawRE(){
+  var s='',c,r,cw=31,ch=19,x0=24,y0=24;
+  s+=T(x0,14,'↑ frecuencia: 12 subportadoras × 15 kHz = 180 kHz','lbl');
+  for(r=0;r<12;r++)for(c=0;c<14;c++){
+   var sel=reMode==='rb'||(reMode==='re'&&c===6&&r===5)||(reMode==='freq'&&c===6)||(reMode==='time'&&r===5);
+   s+='<rect x="'+(x0+c*cw)+'" y="'+(y0+r*ch)+'" width="'+(cw-2)+'" height="'+(ch-2)+'" rx="2" class="cell'+(sel?' sel':'')+'"/>';
+  }
+  s+=T(x0,y0+12*ch+14,'tiempo →  14 símbolos OFDM = 1 subframe (1 ms)','lbl');
+  $('resvg').setAttribute('viewBox','0 0 480 '+(y0+12*ch+22));$('resvg').innerHTML=s;
+  var o={re:'1 RE = 1 subportadora × 1 símbolo',freq:'12 RE por símbolo, uno por cada subportadora del RB',time:'14 RE: los 14 símbolos de un subframe con CP normal',rb:'12 × 14 = 168 RE en un RB durante un subframe'};
+  $('reout').textContent=o[reMode];
+  document.querySelectorAll('#remode .btn').forEach(function(b){b.setAttribute('aria-checked',b.getAttribute('data-m')===reMode)});
+ }
+ $('remode').addEventListener('click',function(e){var b=e.target.closest('[data-m]');if(!b)return;reMode=b.getAttribute('data-m');drawRE()});
+ drawRE();
+
+ /* Tiempo */
+ var cpMode='n';
+ function drawTime(){
+  var ext=cpMode==='e',n=ext?6:7,fr=ext?0.2:0.0657,W=640,x0=20,sf=W/10,s='',i;
+  s+='<defs><marker id="ah" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="7" markerHeight="7" orient="auto"><path d="M0,0 L10,5 L0,10 z" fill="var(--ink)"/></marker></defs>';
+  s+=T(x0,14,'1 frame = 10 ms · 10 subframes','h');
+  for(i=0;i<10;i++){s+=R(x0+i*sf,22,sf,20,i===0?'f-pilot':'slot');s+=T(x0+i*sf+sf/2,36,i,i===0?'in':'tick','middle')}
+  s+='<polygon points="'+x0+',42 '+(x0+sf)+',42 '+(x0+W)+',70 '+x0+',70" class="conn"/>';
+  s+=T(x0,86,'1 subframe = 1 ms · 2 slots','h');
+  for(i=0;i<2;i++){s+=R(x0+i*W/2,94,W/2,20,i===0?'f-pilot':'slot');s+=T(x0+i*W/2+W/4,108,'slot '+i+' · 0,5 ms',i===0?'in':'tick','middle')}
+  s+='<polygon points="'+x0+',114 '+(x0+W/2)+',114 '+(x0+W)+',142 '+x0+',142" class="conn"/>';
+  s+=T(x0,158,'1 slot = '+n+' símbolos OFDM ('+(ext?'CP extendido':'CP normal')+')','h');
+  var sw=W/n,cw=sw*fr;
+  for(i=0;i<n;i++){s+=R(x0+i*sw,166,cw,34,'f-sync2')+R(x0+i*sw+cw,166,sw-cw-1.5,34,'f-pilot')+T(x0+i*sw+cw+(sw-cw)/2,188,i,'in','middle')}
+  var xe=x0+sw-4,xs=x0+cw/2;
+  s+='<path d="M'+xe+',204 C'+xe+',226 '+xs+',226 '+xs+',205" fill="none" stroke="var(--ink)" stroke-width="1.5" marker-end="url(#ah)"/>';
+  s+=T(x0+sw+8,222,'el CP copia el final del símbolo y lo pone al inicio','lbl');
+  $('tsvg').setAttribute('viewBox','0 0 680 236');$('tsvg').innerHTML=s;
+  $('tout').innerHTML='<div><span>Símbolos por subframe</span><b>'+(2*n)+'</b><small>2 slots × '+n+'</small></div><div><span>Símbolos por frame</span><b>'+(20*n)+'</b><small>20 slots × '+n+'</small></div><div><span>Duración del CP</span><b>'+(ext?'16,7':'4,7')+' µs</b><small>símbolo útil: 66,7 µs (1/15 kHz)</small></div>';
+  document.querySelectorAll('#cpmode .btn').forEach(function(b){b.setAttribute('aria-checked',b.getAttribute('data-cp')===cpMode)});
+ }
+ $('cpmode').addEventListener('click',function(e){var b=e.target.closest('[data-cp]');if(!b)return;cpMode=b.getAttribute('data-cp');drawTime()});
+ drawTime();
+
+ /* Duplex */
+ var dxMode='fdd';
+ function drawDX(){
+  var x0=96,sw=56,s='',i;
+  s+=T(0,16,'Subframe','tick');for(i=0;i<10;i++){s+=T(x0+i*sw+sw/2,16,i,'tick','middle')}
+  if(dxMode==='fdd'){
+   s+=T(0,42,'Downlink','lbl')+T(0,56,'1805–1880 MHz','tick')+T(0,90,'Uplink','lbl')+T(0,104,'1710–1785 MHz','tick');
+   s+=R(x0,24,10*sw-2,36,'f-pilot')+R(x0,72,10*sw-2,36,'f-bcast');
+   s+=T(x0+5*sw,46,'DL · frecuencia 1 · siempre transmitiendo','in','middle')+T(x0+5*sw,94,'UL · frecuencia 2 · siempre transmitiendo','in','middle');
+   $('dxsvg').setAttribute('viewBox','0 0 680 122');
+   $('dxinfo').innerHTML='<p>Transmiten <b>al mismo tiempo pero en diferente frecuencia</b>. Downlink en la frecuencia 1, uplink en la frecuencia 2.</p><div class="mini" style="margin-top:8px"><div><span>DL</span><b>1805–1880 MHz</b><small>75 MHz de ancho</small></div><div><span>UL</span><b>1710–1785 MHz</b><small>75 MHz de ancho</small></div></div><ul class="pts" style="margin-top:8px"><li>Simultáneo</li><li>Continuo</li><li>Latencia baja</li></ul>';
+  }else{
+   s+=T(0,46,'Una sola','lbl')+T(0,60,'frecuencia','lbl');
+   ['DL','DL','UL','UL'].forEach(function(p,k){s+=R(x0+k*sw,24,sw-2,40,p==='DL'?'f-pilot':'f-bcast')+T(x0+k*sw+sw/2,49,p,'in','middle')});
+   for(i=4;i<10;i++){s+=R(x0+i*sw,24,sw-2,40,'slot')}
+   s+=T(x0+7*sw,49,'… el patrón se repite','lbl','middle');
+   s+=L(x0,76,x0+4*sw-2,76,'dash')+L(x0,70,x0,82,'dash')+L(x0+4*sw-2,70,x0+4*sw-2,82,'dash')+T(x0+2*sw,96,'4 ms','lbl','middle');
+   $('dxsvg').setAttribute('viewBox','0 0 680 108');
+   $('dxinfo').innerHTML='<p>Usa la <b>misma frecuencia alternando en el tiempo</b>. Subframe 0 → DL, 1 → DL, 2 → UL, 3 → UL (4 ms).</p><div class="frow" style="margin-top:8px;align-items:start"><div><b>Características</b><ul class="pts"><li>Comparte espectro</li><li>Flexible</li><li>Requiere sincronización estricta</li></ul></div><div><b>Usa</b><ul class="pts"><li>GPS timing</li><li>IEEE 1588 PTP</li><li>Sync over Ethernet</li></ul></div></div>';
+  }
+  $('dxsvg').innerHTML=s;
+  document.querySelectorAll('#dxmode .btn').forEach(function(b){b.setAttribute('aria-checked',b.getAttribute('data-dx')===dxMode)});
+ }
+ $('dxmode').addEventListener('click',function(e){var b=e.target.closest('[data-dx]');if(!b)return;dxMode=b.getAttribute('data-dx');drawDX()});
+ drawDX();
+
+ /* PCI */
+ var cl=function(v,a,b){v=Math.round(+v);if(isNaN(v))v=a;return Math.min(b,Math.max(a,v))};
+ function pciFwd(){var a=cl($('nid1').value,0,167),b=+$('nid2').value,p=3*a+b;$('pciin').value=p;pciShow(a,b,p)}
+ function pciRev(){var p=cl($('pciin').value,0,503),a=Math.floor(p/3),b=p%3;$('nid1').value=a;$('nid2').value=b;pciShow(a,b,p)}
+ function pciShow(a,b,p){$('pciout').textContent='PCI = 3 × '+a+' + '+b+' = '+p+'   (PCI mod 3 = '+(p%3)+')'}
+ $('nid1').addEventListener('input',pciFwd);$('nid2').addEventListener('change',pciFwd);$('pciin').addEventListener('input',pciRev);
+ pciFwd();
+ host.addEventListener('click',function(e){var b=e.target.closest('[data-step]');if(!b)return;stopPlay();setStep(+b.getAttribute('data-step'));$('h-sync').scrollIntoView({behavior:reduce?'auto':'smooth',block:'start'})});
+
+ /* Potencia */
+ function pw(){
+  var w=Math.max(0.1,+$('pw-w').value||0.1),p=+$('pw-p').value,pp=w*p/100;
+  $('pw-po').textContent=p+' %';
+  $('pw-out').textContent='Total: '+nf(w,1)+' W = '+nf(dB(w*1000),1)+' dBm · Piloto: '+nf(pp,2)+' W = '+nf(dB(pp*1000),1)+' dBm';
+ }
+ $('pw-w').addEventListener('input',pw);$('pw-p').addEventListener('input',pw);pw();
+}
+
 /* ---------- Eventos ---------- */
-function go(t){if(!TECH[t])t='3g';tech=t;stopPlay();renderTech();renderPower();try{if(location.hash!=='#'+t)history.replaceState(null,'','#'+t)}catch(e){}}
+function go(t){if(!TECH[t])t='3g';tech=t;stopPlay();$('notes').hidden=(t!=='4g');renderTech();renderPower();try{if(location.hash!=='#'+t)history.replaceState(null,'','#'+t)}catch(e){}}
 document.querySelectorAll('.tab').forEach(function(b){b.addEventListener('click',function(){go(b.dataset.t)})});
 $('prev').addEventListener('click',function(){stopPlay();setStep(step-1)});
 $('next').addEventListener('click',function(){stopPlay();setStep(step+1)});
@@ -507,7 +789,7 @@ $('copy').addEventListener('click',function(){
  var fail=function(){fb.hidden=false;fb.value=url;fb.focus();fb.select();msg.textContent='Copia el enlace con Ctrl+C'};
  try{navigator.clipboard.writeText(url).then(function(){msg.textContent='Enlace copiado';fb.hidden=true},fail)}catch(e){fail()}
 });
-renderTable();
+renderTable();initNotes();
 var t0=location.hash.slice(1); go(TECH[t0]?t0:'3g');
 })();
 </script>
